@@ -1,0 +1,7 @@
+S3 (Raw Data)
+   ↓
+AWS Glue (PySpark ETL)
+   ↓
+S3 (Parquet Processed)
+   ↓
+Athena (SQL Queries)
