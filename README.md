@@ -52,3 +52,15 @@ SELECT customer_id, SUM(revenue) AS total_revenue
 FROM processed_orders
 GROUP BY customer_id
 ORDER BY total_revenue DESC;
+
+
+  “How to Run” section
+1. Upload raw data to S3
+2. Run Glue job (etl_job.py)
+3. Output stored in S3 (Parquet)
+4. Query using Athena
+
+  Data Schema
+orders(order_id, customer_id, order_date)
+order_items(order_id, price)
+customers(customer_id, customer_name)
