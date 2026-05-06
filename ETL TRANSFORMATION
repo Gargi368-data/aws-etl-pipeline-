@@ -1,29 +1,34 @@
-
----
-
-# 🧠 etl_job.py (basic working template)
-
-```python
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, sum as _sum
+from pyspark.sql.functions import col
 
-spark = SparkSession.builder.appName("ETL Pipeline").getOrCreate()
+# Initialize Spark
+spark = SparkSession.builder.appName("AWS_ETL_Pipeline").getOrCreate()
 
-# Load data from S3
-orders = spark.read.csv("s3://your-bucket/orders.csv", header=True)
-order_items = spark.read.csv("s3://your-bucket/order_items.csv", header=True)
-customers = spark.read.csv("s3://your-bucket/customers.csv", header=True)
+# S3 paths
+raw_path = "s3://olist-data-gargi-mumbai/raw/"
+processed_path = "s3://olist-data-processed/final/"
 
-# Join tables
+# Load datasets
+orders = spark.read.option("header", "true") \
+    .csv(raw_path + "olist_orders_dataset.csv")
+
+order_items = spark.read.option("header", "true") \
+    .csv(raw_path + "olist_order_items_dataset.csv")
+
+customers = spark.read.option("header", "true") \
+    .csv(raw_path + "olist_customers_dataset.csv")
+
+# Join datasets
 df = orders.join(order_items, "order_id") \
            .join(customers, "customer_id")
 
 # Transformations
-df = df.withColumn("revenue", col("price") * col("quantity"))
+df = df.withColumn("price", col("price").cast("double"))
+df = df.withColumn("revenue", col("price"))   # can extend later (price * quantity)
 
-# Aggregation
-result = df.groupBy("customer_id") \
-           .agg(_sum("revenue").alias("total_revenue"))
+# Write output in Parquet format
+df.write.mode("overwrite") \
+    .parquet(processed_path)
 
-# Write to S3 (Parquet)
-result.write.mode("overwrite").parquet("s3://your-bucket/processed/")
+print("ETL Pipeline executed successfully")
+
